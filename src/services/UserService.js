@@ -13,11 +13,24 @@ const api = axios.create({
 // Fetch all users
 export const getUsers = async () => {
   try {
-    const response = await api.get("/");
-    return Array.isArray(response.data) ? response.data : [];
+    const response = await fetch("http://localhost:5000/api/users/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error response:", errorData);
+      throw new Error(errorData.message || "Failed to fetch users");
+    }
+
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error("Error fetching users:", error.response?.data || error.message);
-    return [];
+    console.error("Error fetching users:", error);
+    throw error;
   }
 };
 

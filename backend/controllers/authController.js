@@ -94,22 +94,25 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-// ✅ Login
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
     if (!email || !password) return res.status(400).json({ error: "Email and password are required" });
 
-    const [users] = await db.promise().query("SELECT * FROM master_user WHERE email = ?", [email]);
+    const [users] = await db
+      .promise()
+      .query("SELECT * FROM master_user WHERE email = ? AND is_deleted = FALSE", [email]);
+
     if (users.length === 0) return res.status(404).json({ error: "User not found" });
 
     const user = users[0];
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: "Invalid password" });
 
+    // ✅ Include name in the token payload
     const token = jwt.sign(
-      { userId: user.user_id, role: user.role_id },
+      { userId: user.user_id, role: user.role_id, name: user.name },  
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -119,6 +122,7 @@ exports.login = async (req, res) => {
       token,
       user: {
         id: user.user_id,
+        name: user.name,  // ✅ Include name
         email: user.email,
         role: String(user.role_id),
       },
@@ -129,6 +133,7 @@ exports.login = async (req, res) => {
   }
 };
 
+
 // ✅ Delete Expired OTPs Every 10 Minutes
 setInterval(async () => {
   try {
@@ -138,3 +143,5 @@ setInterval(async () => {
     console.error("❌ Error clearing expired OTPs:", err);
   }
 }, 10 * 60 * 1000); // Runs every 10 minutes
+
+

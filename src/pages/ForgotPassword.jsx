@@ -56,7 +56,7 @@ const ForgotPassword = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost:5000/api/verify-otp", { email: formData.email, otp: formData.otp });
+      const response = await axios.post("http://localhost:5000/api/auth/verify-otp", { email: formData.email, otp: formData.otp });
       setMessage(response.data.message);
       setStep(3);
     } catch (err) {
@@ -74,7 +74,7 @@ const ForgotPassword = () => {
 
     setLoading(true);
     try {
-      await axios.post("http://localhost:5000/api/reset-password", formData);
+      await axios.post("http://localhost:5000/api/auth/reset-password", formData);
       setMessage("Password reset successful! Redirecting to login...");
       setTimeout(() => navigate("/"), 3000);
     } catch (err) {

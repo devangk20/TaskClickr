@@ -1,46 +1,84 @@
 const db = require("../config/db");
-const bcrypt = require("bcrypt");
 
-// Get all users (Admin & Super Admin)
-exports.getAllUsers = (req, res) => {
-  const sql = "SELECT user_id, first_name, last_name, email, role_id FROM master_user WHERE is_deleted = 0";
-  db.query(sql, (err, result) => {
-    if (err) return res.status(500).json(err);
-    res.json(result);
+// Get all users (excluding soft-deleted users)
+const getAllUsers = (req, res) => {
+  const query = "SELECT * FROM master_user WHERE is_deleted = FALSE";
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching users:", err);
+      return res.status(500).json({ error: "Failed to fetch users" });
+    }
+    res.json(results);
   });
 };
 
 // Add a new user
-exports.addUser = async (req, res) => {
-  const { first_name, last_name, email, password, role_id } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
+const addUser = (req, res) => {
+  const { first_name, middle_name, last_name, email, mobile_number, password, role_id, position } = req.body;
 
-  const sql = "INSERT INTO master_user (first_name, last_name, email, password, role_id) VALUES (?, ?, ?, ?, ?)";
-  db.query(sql, [first_name, last_name, email, hashedPassword, role_id], (err, result) => {
-    if (err) return res.status(500).json(err);
-    res.json({ message: "User added successfully" });
-  });
+  const query = `
+    INSERT INTO master_user (first_name, middle_name, last_name, email, mobile_number, password, role_id, position)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+  db.query(
+    query,
+    [first_name, middle_name, last_name, email, mobile_number, password, role_id, position],
+    (err, results) => {
+      if (err) {
+        console.error("Error adding user:", err);
+        return res.status(500).json({ error: "Failed to add user" });
+      }
+      res.status(201).json({ id: results.insertId, ...req.body });
+    }
+  );
 };
 
 // Update a user
-exports.updateUser = (req, res) => {
-  const { first_name, last_name, email, role_id } = req.body;
+const updateUser = (req, res) => {
   const { id } = req.params;
+  const { first_name, middle_name, last_name, email, mobile_number, role_id, position } = req.body;
 
-  const sql = "UPDATE master_user SET first_name = ?, last_name = ?, email = ?, role_id = ? WHERE user_id = ?";
-  db.query(sql, [first_name, last_name, email, role_id, id], (err, result) => {
-    if (err) return res.status(500).json(err);
-    res.json({ message: "User updated successfully" });
-  });
+  const query = `
+    UPDATE master_user 
+    SET first_name = ?, middle_name = ?, last_name = ?, email = ?, 
+        mobile_number = ?, role_id = ?, position = ?
+    WHERE user_id = ?`;
+
+  db.query(
+    query,
+    [first_name, middle_name, last_name, email, mobile_number, role_id, position, id],
+    (err, results) => {
+      if (err) {
+        console.error("Error updating user:", err);
+        return res.status(500).json({ error: "Failed to update user" });
+      }
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json({ id, ...req.body });
+    }
+  );
 };
 
 // Soft delete a user
-exports.deleteUser = (req, res) => {
+const deleteUser = (req, res) => {
   const { id } = req.params;
-
-  const sql = "UPDATE master_user SET is_deleted = 1 WHERE user_id = ?";
-  db.query(sql, [id], (err, result) => {
-    if (err) return res.status(500).json(err);
-    res.json({ message: "User deleted successfully" });
+  const query = "UPDATE master_user SET is_deleted = TRUE WHERE user_id = ?";
+  db.query(query, [id], (err, results) => {
+    if (err) {
+      console.error("Error deleting user:", err);
+      return res.status(500).json({ error: "Failed to delete user" });
+    }
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(204).send(); // No content to send back
   });
+};
+
+module.exports = {
+  getAllUsers,
+  addUser,
+  updateUser,
+  deleteUser,
 };

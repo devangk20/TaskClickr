@@ -10,38 +10,46 @@ const Login = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setError("");
 
-    try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", {
-        email,
-        password,
-      });
+  try {
+    const response = await axios.post("http://localhost:5000/api/auth/login", {
+      email,
+      password,
+    });
 
-      if (response.data.success) {
-        const { token, user } = response.data;
+    console.log("Login API Response:", response.data); // 🔍 Debugging Log
 
-        localStorage.setItem("token", token);
-        localStorage.setItem("role", String(user.role));
-        localStorage.setItem("userId", user.id);
-        localStorage.setItem("email", user.email);
+    if (response.data.success) {
+      const { token, user } = response.data;
 
-        const role = localStorage.getItem("role");
-
-        if (role === "3" || role === "1") {
-          navigate("/admin-dashboard");
-        } else {
-          navigate("/user-dashboard");
-        }
-      } else {
-        setError("Invalid email or password");
+      if (!token || !user) {
+        throw new Error("Token or user data missing in response");
       }
-    } catch (err) {
-      setError(err.response?.data?.error || "Invalid email or password");
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", String(user.role));
+      localStorage.setItem("userId", user.id);
+      localStorage.setItem("email", user.email);
+
+      const role = localStorage.getItem("role");
+
+      if (role === "3" || role === "1") {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/user-dashboard");
+      }
+    } else {
+      setError("Invalid email or password");
     }
-  };
+  } catch (err) {
+    console.error("Login Error:", err.response?.data || err.message);
+    setError(err.response?.data?.error || "Invalid email or password");
+  }
+};
+
 
   return (
     <div

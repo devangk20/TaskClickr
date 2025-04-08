@@ -1,112 +1,128 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
+import { fetchAdminTaskStats } from "../services/adminDashboardService";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const AdminDashboard = () => {
+  const [viewMyTasks, setViewMyTasks] = useState(true);
+  const [taskStats, setTaskStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [userId, setUserId] = useState(null); 
+
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("userId");
+    if (storedUserId) {
+      setUserId(storedUserId);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      fetchTaskStats(userId);
+    }
+  }, [userId]); // Fetch data only after userId is set
+
+  const fetchTaskStats = async (adminId) => {
+    try {
+      setLoading(true);
+      const data = await fetchAdminTaskStats(adminId);
+      setTaskStats(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Navbar />
       <div className="container mt-5 pt-4">
         <h1 className="dashboard-title text-center">Admin Dashboard</h1>
-        <p className="dashboard-subtitle text-center">Monitor and manage ISP-related tasks efficiently.</p>
+        <p className="dashboard-subtitle text-center">
+          Manage your tasks and monitor company-wide tasks efficiently.
+        </p>
 
-        {/* Stats Section */}
-        <div className="row mt-4">
-          <div className="col-md-4">
-            <div className="info-box">
-              <h5>Active Clients</h5>
-              <h2>230</h2>
-            </div>
-          </div>
-
-          <div className="col-md-4">
-            <div className="info-box">
-              <h5>Today's Tasks</h5>
-              <h2>15</h2>
-            </div>
-          </div>
-
-          <div className="col-md-4">
-            <div className="info-box">
-              <h5>Pending Tasks</h5>
-              <h2>5</h2>
-            </div>
-          </div>
+        <div className="text-center mb-4">
+          <button
+            className={`btn ${viewMyTasks ? "btn-primary" : "btn-outline-primary"} mx-2`}
+            onClick={() => setViewMyTasks(true)}
+          >
+            View My Tasks
+          </button>
+          <button
+            className={`btn ${!viewMyTasks ? "btn-primary" : "btn-outline-primary"} mx-2`}
+            onClick={() => setViewMyTasks(false)}
+          >
+            View Company Tasks
+          </button>
         </div>
 
-        {/* Additional Stats */}
-        <div className="row mt-4">
-          <div className="col-md-4">
-            <div className="info-box">
-              <h5>Completed Tasks</h5>
-              <h2>42</h2>
-            </div>
-          </div>
-
-          <div className="col-md-4">
-            <div className="info-box">
-              <h5>Client Queries</h5>
-              <h2>8</h2>
-            </div>
-          </div>
-
-          <div className="col-md-4">
-            <div className="info-box">
-              <h5>Ongoing Tasks</h5>
-              <h2>12</h2>
-            </div>
-          </div>
-        </div>
+        {loading ? (
+          <p className="text-center">Loading task data...</p>
+        ) : error ? (
+          <p className="text-center text-danger">{error}</p>
+        ) : (
+          <>
+            {viewMyTasks ? (
+              <div className="task-section">
+                <h3 className="section-title">Your Task Summary</h3>
+                <div className="row">
+                  <div className="col-md-4">
+                    <div className="info-box">
+                      <h5>Today's Tasks</h5>
+                      <h2>{taskStats?.adminTasks?.todays_tasks || 0}</h2>
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="info-box">
+                      <h5>Pending Tasks</h5>
+                      <h2>{taskStats?.adminTasks?.pending_tasks || 0}</h2>
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="info-box">
+                      <h5>Completed Tasks</h5>
+                      <h2>{taskStats?.adminTasks?.completed_tasks || 0}</h2>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="task-section">
+                <h3 className="section-title">Company Task Summary</h3>
+                <div className="row">
+                  <div className="col-md-3">
+                    <div className="info-box">
+                      <h5>Today's Tasks</h5>
+                      <h2>{taskStats?.companyTasks?.todays_tasks || 0}</h2>
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="info-box">
+                      <h5>Pending Tasks</h5>
+                      <h2>{taskStats?.companyTasks?.pending_tasks || 0}</h2>
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="info-box">
+                      <h5>Completed Tasks</h5>
+                      <h2>{taskStats?.companyTasks?.completed_tasks || 0}</h2>
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="info-box">
+                      <h5>Total Tasks</h5>
+                      <h2>{taskStats?.companyTasks?.total_tasks || 0}</h2>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
-
-      {/* Styling for Dashboard */}
-      <style>
-        {`
-          .dashboard-title {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #0056b3; /* Deep Blue */
-          }
-
-          .dashboard-subtitle {
-            font-size: 1.1rem;
-            color: #666; /* Muted Grey */
-          }
-
-          .info-box {
-            background: #f8f9fa; /* Light Grey */
-            border-radius: 12px;
-            padding: 40px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s ease-in-out;
-            height: 160px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-          }
-
-          .info-box h5 {
-            font-size: 1.3rem;
-            color: #444; /* Dark Grey */
-          }
-
-          .info-box h2 {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #007bff; /* Professional Blue */
-          }
-
-          .info-box:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-          }
-
-          .container {
-            margin-top: 80px; /* Fix navbar overlap */
-          }
-        `}
-      </style>
     </>
   );
 };
