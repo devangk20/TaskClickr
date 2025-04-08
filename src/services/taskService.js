@@ -1,7 +1,9 @@
 import axios from "axios";
+import environment from "../assets/environment/environment";
 
-const API_BASE_URL = "http://localhost:5000/api/tasks";
-const USER_TASKS_URL = "http://localhost:5000/api/usertasks"; // ✅ Added endpoint
+const API_BASE_URL = environment.API_BASE_URL;
+
+const USER_TASKS_URL = "environment.API_BASE_URL"; // ✅ Added endpoint
 
 // Function to get auth headers with JWT token
 const getAuthHeaders = () => {

@@ -1,10 +1,12 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/daily-activities"; // Update this as needed
+import environment from "../assets/environment/environment";
+
+const API_BASE_URL = environment.API_BASE_URL;
 
 export const fetchUserActivities = async (userId, token) => {
   try {
-    const response = await axios.get(`${API_URL}/user/${userId}`, {
+    const response = await axios.get(`${API_BASE_URL}/user/${userId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
@@ -16,7 +18,7 @@ export const fetchUserActivities = async (userId, token) => {
 
 export const addDailyActivity = async (activityData, token) => {
   try {
-    const response = await axios.post(API_URL, activityData, {
+    const response = await axios.post(API_BASE_URL, activityData, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
@@ -29,7 +31,7 @@ export const addDailyActivity = async (activityData, token) => {
 // ✅ Add fetchTaskDetails function
 export const fetchTaskDetails = async (taskId, token) => {
   try {
-    const response = await axios.get(`${API_URL}/task/${taskId}`, {
+    const response = await axios.get(`${API_BASE_URL}/task/${taskId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;

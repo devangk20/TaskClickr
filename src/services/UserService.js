@@ -1,10 +1,12 @@
 import axios from "axios";
-const API_URL = "http://localhost:5000/api/users"; // Use backend port
+import environment from "../assets/environment/environment";
+
+const API_BASE_URL = environment.API_BASE_URL;
  // Ensure correct base API route
 
 // Configure Axios instance with a base URL
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },

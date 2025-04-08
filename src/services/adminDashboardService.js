@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:5000/api";
+import environment from "../assets/environment/environment";
+
+const API_BASE_URL = environment.API_BASE_URL;
 
 /**
  * Fetch admin's task statistics.
