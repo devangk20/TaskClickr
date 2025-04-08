@@ -21,7 +21,7 @@ const employeeRoutes = require("./routes/employeeRoute");
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/daily-activity", dailyActivityRoutes);
-app.use("/api/tasks", taskRoutes);
+app.use("/api", taskRoutes);
 app.use("/api/admin-dashboard", adminDashboardRoutes);
 app.use("/api/work-types", workTypeRoutes);
 app.use("/api/employees", employeeRoutes);
