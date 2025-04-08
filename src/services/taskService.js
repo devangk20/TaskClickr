@@ -3,7 +3,7 @@ import environment from "../assets/environment/environment";
 
 const API_BASE_URL = environment.API_BASE_URL;
 
-const USER_TASKS_URL = "environment.API_BASE_URL"; // ✅ Added endpoint
+const USER_TASKS_URL = environment.API_BASE_URL; // ✅ Added endpoint
 
 // Function to get auth headers with JWT token
 const getAuthHeaders = () => {

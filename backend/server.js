@@ -1,3 +1,24 @@
+const mysql = require("mysql2");
+require("dotenv").config();
+
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+});
+
+pool.getConnection((err, connection) => {
+  if (err) {
+    console.error("❌ MySQL Pool Connection Error:", err);
+    return;
+  }
+  console.log("✅ MySQL Pool Connected...");
+  connection.release(); // Don't forget to release after checking
+});
+
+module.exports = pool.promise(); // This already gives us promise-based interface
+
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();

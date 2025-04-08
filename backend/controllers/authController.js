@@ -19,7 +19,7 @@ exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
 
   try {
-    const [users] = await db.promise().query("SELECT * FROM master_user WHERE email = ?", [email]);
+    const [users] = await db.query("SELECT * FROM master_user WHERE email = ?", [email]);
 
     if (users.length === 0) return res.status(404).json({ error: "Email not found" });
 
@@ -33,7 +33,7 @@ exports.forgotPassword = async (req, res) => {
     const otp = randomatic("0", 6);
     const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
 
-    await db.promise().query("UPDATE master_user SET otp = ?, otp_expires = ? WHERE email = ?", [otp, otpExpires, email]);
+    await db.query("UPDATE master_user SET otp = ?, otp_expires = ? WHERE email = ?", [otp, otpExpires, email]);
 
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
@@ -54,7 +54,7 @@ exports.verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
 
   try {
-    const [users] = await db.promise().query("SELECT * FROM master_user WHERE email = ?", [email]);
+    const [users] = await db.query("SELECT * FROM master_user WHERE email = ?", [email]);
     if (users.length === 0) return res.status(404).json({ error: "Email not found" });
 
     const user = users[0];
@@ -74,7 +74,7 @@ exports.resetPassword = async (req, res) => {
   const { email, otp, newPassword } = req.body;
 
   try {
-    const [users] = await db.promise().query("SELECT * FROM master_user WHERE email = ?", [email]);
+    const [users] = await db.query("SELECT * FROM master_user WHERE email = ?", [email]);
     if (users.length === 0) return res.status(404).json({ error: "Email not found" });
 
     const user = users[0];
@@ -84,7 +84,7 @@ exports.resetPassword = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    await db.promise().query("UPDATE master_user SET password = ?, otp = NULL, otp_expires = NULL WHERE email = ?", 
+    await db.query("UPDATE master_user SET password = ?, otp = NULL, otp_expires = NULL WHERE email = ?", 
       [hashedPassword, email]);
 
     res.json({ success: true, message: "Password reset successful!" });
@@ -100,9 +100,7 @@ exports.login = async (req, res) => {
   try {
     if (!email || !password) return res.status(400).json({ error: "Email and password are required" });
 
-    const [users] = await db
-      .promise()
-      .query("SELECT * FROM master_user WHERE email = ? AND is_deleted = FALSE", [email]);
+    const [users] = await db.query("SELECT * FROM master_user WHERE email = ? AND is_deleted = FALSE", [email]);
 
     if (users.length === 0) return res.status(404).json({ error: "User not found" });
 
@@ -133,15 +131,12 @@ exports.login = async (req, res) => {
   }
 };
 
-
 // ✅ Delete Expired OTPs Every 10 Minutes
 setInterval(async () => {
   try {
-    await db.promise().query("UPDATE master_user SET otp = NULL, otp_expires = NULL WHERE otp_expires < NOW()");
+    await db.query("UPDATE master_user SET otp = NULL, otp_expires = NULL WHERE otp_expires < NOW()");
     console.log("🗑️ Expired OTPs cleared");
   } catch (err) {
     console.error("❌ Error clearing expired OTPs:", err);
   }
 }, 10 * 60 * 1000); // Runs every 10 minutes
-
-
