@@ -1,6 +1,6 @@
-const db = require("../config/db");
+const pool = require("../config/db");
 
-const getUserTaskStats = (req, res) => {
+const getUserTaskStats = async (req, res) => {
   const userId = req.query.userId;
 
   if (!userId) {
@@ -17,16 +17,15 @@ const getUserTaskStats = (req, res) => {
     WHERE ta.user_id = ? AND t.is_deleted = FALSE
   `;
 
-  db.query(sql, [userId], (err, results) => {
-    if (err) {
-      console.error("❌ Error fetching user task stats:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
-
-    res.json(results[0]); // Send object, not array
-  });
+  try {
+    const [results] = await pool.query(sql, [userId]);
+    res.json(results[0]); // Return single stats object
+  } catch (err) {
+    console.error("❌ Error fetching user task stats:", err);
+    res.status(500).json({ error: "Database error" });
+  }
 };
 
 module.exports = {
-  getUserTaskStats
+  getUserTaskStats,
 };

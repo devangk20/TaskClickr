@@ -2,11 +2,10 @@ import axios from "axios";
 import environment from "../assets/environment/environment";
 
 const API_BASE_URL = environment.API_BASE_URL;
- // Ensure correct base API route
 
-// Configure Axios instance with a base URL
+// Configure Axios instance
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: `${API_BASE_URL}/users`, // Assumes all routes are under `/api/users`
   headers: {
     "Content-Type": "application/json",
   },
@@ -15,24 +14,11 @@ const api = axios.create({
 // Fetch all users
 export const getUsers = async () => {
   try {
-    const response = await fetch("http://localhost:5000/api/users/", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Error response:", errorData);
-      throw new Error(errorData.message || "Failed to fetch users");
-    }
-
-    const data = await response.json();
-    return data;
+    const response = await api.get("/");
+    return response.data;
   } catch (error) {
-    console.error("Error fetching users:", error);
-    throw error;
+    console.error("Error fetching users:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Failed to fetch users");
   }
 };
 
@@ -43,7 +29,7 @@ export const addUser = async (userData) => {
     return response.data;
   } catch (error) {
     console.error("Error adding user:", error.response?.data || error.message);
-    throw error;
+    throw new Error(error.response?.data?.message || "Failed to add user");
   }
 };
 
@@ -54,7 +40,7 @@ export const updateUser = async (userId, updatedUserData) => {
     return response.data;
   } catch (error) {
     console.error("Error updating user:", error.response?.data || error.message);
-    throw error;
+    throw new Error(error.response?.data?.message || "Failed to update user");
   }
 };
 
@@ -64,6 +50,6 @@ export const deleteUser = async (userId) => {
     await api.delete(`/${userId}`);
   } catch (error) {
     console.error("Error deleting user:", error.response?.data || error.message);
-    throw error;
+    throw new Error(error.response?.data?.message || "Failed to delete user");
   }
 };
