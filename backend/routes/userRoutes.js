@@ -3,15 +3,15 @@ const router = express.Router();
 const userController = require("../controllers/userController");
 
 // Get all users
-router.get("/users", userController.getAllUsers);
+router.get("/", userController.getAllUsers);
 
 // Add a new user
-router.post("/users", userController.addUser);
+router.post("/", userController.addUser);
 
 // Update a user
-router.put("/users/:id", userController.updateUser);
+router.put("/:id", userController.updateUser);   // ✅ Corrected
 
 // Soft delete a user
-router.delete("/users/:id", userController.deleteUser);
+router.delete("/:id", userController.deleteUser); // ✅ Corrected
 
 module.exports = router;

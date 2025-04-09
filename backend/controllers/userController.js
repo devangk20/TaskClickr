@@ -1,4 +1,5 @@
 const pool = require("../config/db");
+const bcrypt = require("bcryptjs");
 
 // Get all users (excluding soft-deleted users)
 const getAllUsers = async (req, res) => {
@@ -15,23 +16,46 @@ const getAllUsers = async (req, res) => {
 // Add a new user
 const addUser = async (req, res) => {
   const {
-    first_name, middle_name, last_name,
-    email, mobile_number, password,
-    role_id, position
+    first_name,
+    middle_name,
+    last_name,
+    email,
+    mobile_number,
+    password,
+    role_id,
+    position,
   } = req.body;
 
-  const query = `
-    INSERT INTO master_user 
-    (first_name, middle_name, last_name, email, mobile_number, password, role_id, position)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-
   try {
+    // ✅ Hash the password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
+    // Add this inside addUser BEFORE the INSERT query
+const [existingUser] = await pool.query(
+  "SELECT * FROM master_user WHERE email = ? AND is_deleted = FALSE",
+  [email]
+);
+
+if (existingUser.length > 0) {
+  return res.status(400).json({ error: "Email already in use" });
+}
+
+    const query = `
+      INSERT INTO master_user 
+      (first_name, middle_name, last_name, email, mobile_number, password, role_id, position)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
     const [results] = await pool.query(query, [
-      first_name, middle_name, last_name,
-      email, mobile_number, password,
-      role_id, position
+      first_name,
+      middle_name,
+      last_name,
+      email,
+      mobile_number,
+      hashedPassword,
+      role_id,
+      position,
     ]);
-    res.status(201).json({ id: results.insertId, ...req.body });
+
+    res.status(201).json({ id: results.insertId, ...req.body, password: undefined });
   } catch (err) {
     console.error("Error adding user:", err);
     res.status(500).json({ error: "Failed to add user" });
@@ -42,8 +66,13 @@ const addUser = async (req, res) => {
 const updateUser = async (req, res) => {
   const { id } = req.params;
   const {
-    first_name, middle_name, last_name,
-    email, mobile_number, role_id, position
+    first_name,
+    middle_name,
+    last_name,
+    email,
+    mobile_number,
+    role_id,
+    position,
   } = req.body;
 
   const query = `
@@ -54,9 +83,14 @@ const updateUser = async (req, res) => {
 
   try {
     const [results] = await pool.query(query, [
-      first_name, middle_name, last_name,
-      email, mobile_number, role_id, position,
-      id
+      first_name,
+      middle_name,
+      last_name,
+      email,
+      mobile_number,
+      role_id,
+      position,
+      id,
     ]);
     if (results.affectedRows === 0) {
       return res.status(404).json({ error: "User not found" });
