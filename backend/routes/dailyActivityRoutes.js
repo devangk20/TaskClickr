@@ -1,9 +1,22 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const dailyActivityController = require("../controllers/dailyActivityController");
+const {
+  createDailyActivity,
+  fetchUserTasks,
+  fetchAllDailyActivities,
+  createAdhocTask
+} = require('../controllers/dailyActivityController');
 
-// Ensure that the controller is correctly referenced
-router.post("/add", dailyActivityController.addDailyActivity);
-router.get("/", dailyActivityController.getAllDailyActivities);
+// POST: Create Adhoc task
+router.post("/adhoc", createAdhocTask);
+
+// POST: Log a new daily activity
+router.post('/daily-activity', createDailyActivity);
+
+// GET: Fetch tasks assigned to a user
+router.get('/user-tasks/:userId', fetchUserTasks);
+
+// GET: All daily activities for admin
+router.get('/daily-activities', fetchAllDailyActivities);
 
 module.exports = router;

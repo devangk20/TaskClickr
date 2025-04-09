@@ -3,6 +3,7 @@ import Navbar from "./Navbar";
 import { fetchAdminTaskStats } from "../services/adminDashboardService";
 import "bootstrap/dist/css/bootstrap.min.css";
 
+
 const StatCard = ({ title, value }) => (
   <div className="flex-fill bg-white rounded-4 shadow-sm text-center p-4 mx-2 mb-4">
     <h6 className="text-muted mb-2">{title}</h6>
@@ -25,6 +26,7 @@ const ProgressBar = ({ label, value, max }) => {
           style={{ width: `${percentage}%` }}
         ></div>
       </div>
+      
     </div>
   );
 };

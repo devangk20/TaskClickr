@@ -1,54 +1,20 @@
+// src/services/dailyActivityService.js
 import axios from "axios";
 
-import environment from "../assets/environment/environment";
-
-const API_BASE_URL = environment.API_BASE_URL;
-
-export const fetchUserActivities = async (userId, token) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/user/${userId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching user activities:", error);
-    throw error;
-  }
+// Fetch tasks assigned to a user
+export const getAssignedTasks = async (userId) => {
+  const response = await axios.get(`/api/tasks/assigned/${userId}`);
+  return response.data;
 };
 
-export const addDailyActivity = async (activityData, token) => {
-  try {
-    const response = await axios.post(API_BASE_URL, activityData, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error adding daily activity:", error);
-    throw error;
-  }
+// Create an ad-hoc task
+export const createAdhocTask = async (adhocTask) => {
+  const response = await axios.post("/api/tasks/adhoc", adhocTask);
+  return response.data;
 };
 
-// ✅ Add fetchTaskDetails function
-export const fetchTaskDetails = async (taskId, token) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/task/${taskId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching task details:", error);
-    throw error;
-  }
+// Log daily activity
+export const logDailyActivity = async (activityPayload) => {
+  const response = await axios.post("/api/daily-activity", activityPayload);
+  return response.data;
 };
-export const fetchUsers = async (token) => {
-    try {
-      const response = await axios.get("http://localhost:5000/api/users", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      throw error;
-    }
-  };
-  
